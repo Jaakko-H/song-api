@@ -3,6 +3,9 @@ A REST API exercise using Python and Flask.
 
 ## Environment setup
 
+For this project you require a free local MongoDB database server.
+You can download it from https://www.mongodb.com/.
+
 It is highly recommended to run everything in an up-to-date virtualenv.
 The project requires python3 to run properly. The environment can be set up
 using either:
