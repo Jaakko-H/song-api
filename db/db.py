@@ -11,6 +11,9 @@ class MongoDB(object):
         self.clear_songs_collection()
         self.import_data_from_json()
 
+    def getSongs(self):
+        return list(self.__db[self.collection_songs].find())
+
     def clear_songs_collection(self):
         self.__db[self.collection_songs].delete_many({})
 
