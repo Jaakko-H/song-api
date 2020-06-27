@@ -3,6 +3,7 @@ import configparser
 from db import db
 from flask import Flask
 from flask_restful import Api, Resource, fields, marshal_with, reqparse
+from statistics import mean
 
 app = Flask(__name__)
 api = Api(app)
@@ -22,7 +23,7 @@ except Exception as e:
 
 mongodb = db.MongoDB(db_config)
 
-songs_fields = {
+song_fields = {
     '_id': fields.String,
     'artist': fields.String,
     'title': fields.String,
@@ -31,13 +32,29 @@ songs_fields = {
     'released': fields.String
 }
 
-req_parser = reqparse.RequestParser()
-req_parser.add_argument('page_size')
-
 class SongList(Resource):
-    @marshal_with(songs_fields)
+    req_parser = reqparse.RequestParser()
+    req_parser.add_argument('page_size')
+
+    @marshal_with(song_fields)
     def get(self):
-        args = req_parser.parse_args()
-        return mongodb.getSongs()
+        args = self.req_parser.parse_args()
+        return mongodb.getSongs({}, None)
+
+class SongsByDifficulty(Resource):
+    req_parser = reqparse.RequestParser()
+    req_parser.add_argument('level')
+
+    def get(self):
+        args = self.req_parser.parse_args()
+        query = {}
+        if args['level']:
+            query['level'] = int(args['level'])
+        songs = mongodb.getSongs(query, {'difficulty': 1})
+        song_difficulties = [song['difficulty'] for song in songs]
+        if not song_difficulties:
+            return 0
+        return mean(song_difficulties)
 
 api.add_resource(SongList, '/songs')
+api.add_resource(SongsByDifficulty, '/songs/avg/difficulty')
