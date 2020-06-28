@@ -1,9 +1,10 @@
 import configparser
 import re
 
+from bson.objectid import ObjectId
 from db import db
 from flask import Flask
-from flask_restful import Api, Resource, fields, marshal_with, reqparse
+from flask_restful import Api, Resource, abort, fields, marshal_with, reqparse
 from statistics import mean
 
 app = Flask(__name__)
@@ -33,9 +34,19 @@ song_fields = {
     'released': fields.String
 }
 
-class SongRating(object):
-    def __init__(self, song_id, rating):
-        pass
+song_rating_fields = {
+    '_id': fields.String,
+    'song_id': fields.String,
+    'rating': fields.Integer
+}
+
+def abort_if_rating_not_in_range(rating):
+    if not rating >= 1 or not rating <= 5:
+        abort(400, message='Rating {} not in range of 1-5.'.format(rating))
+
+def abort_if_song_doesnt_exist(song_id):
+    if not mongodb.get_songs({'_id': ObjectId(song_id)}, None):
+        abort(404, message="Song with id {} doesn't exist".format(song_id))
 
 class SongList(Resource):
     req_parser = reqparse.RequestParser()
@@ -76,13 +87,23 @@ class SongSearch(Resource):
 class SongRating(Resource):
     req_parser = reqparse.RequestParser()
     req_parser.add_argument('song_id', required=True)
-    req_parser.add_argument('rating', required=True)
+    req_parser.add_argument('rating', required=True, type=int, help='Rating must be a number between 1 and 5.')
 
     def post(self):
         args = self.req_parser.parse_args()
+        abort_if_rating_not_in_range(args['rating'])
+        return mongodb.insert_song_rating(
+                {'song_id': args['song_id'], 'rating': args['rating']})
 
-
+class SongAvgRating(Resource):
+    @marshal_with(song_rating_fields)
+    def get(self, song_id):
+        abort_if_song_doesnt_exist(song_id)
+        song_ratings = mongodb.get_song_ratings({'song_id': song_id}, None)
+        return song_ratings
 
 api.add_resource(SongList, '/songs')
 api.add_resource(SongAvgDifficulty, '/songs/avg/difficulty')
 api.add_resource(SongSearch, '/songs/search')
+api.add_resource(SongRating, '/songs/rating')
+api.add_resource(SongAvgRating, '/songs/avg/rating/<song_id>')
