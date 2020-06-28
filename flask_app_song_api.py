@@ -39,6 +39,10 @@ def abort_if_rating_not_in_range(rating):
     if not rating >= 1 or not rating <= 5:
         abort(400, message='Rating {} not in range of 1-5.'.format(rating))
 
+def abort_if_missing_page_size_with_page_number(page_number, page_size):
+    if page_number and not page_size:
+        abort(400, message='Missing parameter page_size when parameter page_number is defined.')
+
 def abort_if_song_doesnt_exist(song_id):
     if not mongodb.get_songs({'_id': ObjectId(song_id)}):
         abort(404, message="Song with id {} doesn't exist".format(song_id))
@@ -51,6 +55,7 @@ class SongList(Resource):
     @marshal_with(song_fields)
     def get(self):
         args = self.req_parser.parse_args()
+        abort_if_missing_page_size_with_page_number(args['page_number'], page_size=args['page_size'])
         return mongodb.get_songs({}, page_number=args['page_number'], page_size=args['page_size'])
 
 class SongAvgDifficulty(Resource):

@@ -9,6 +9,7 @@ class MongoDB(object):
     def __init__(self, db_config):
         mongo_client = pymongo.MongoClient(db_config['mongodb_url'])
         self.__db = mongo_client[db_config['db_name']]
+        self.__clear_song_ratings_collection()
         self.__clear_songs_collection()
         self.__import_songs_data_from_json()
 
@@ -28,6 +29,9 @@ class MongoDB(object):
 
     def __clear_songs_collection(self):
         self.__db[self.collection_songs].delete_many({})
+
+    def __clear_song_ratings_collection(self):
+        self.__db[self.collection_song_ratings].delete_many({})
 
     def __import_songs_data_from_json(self):
         with open('songs.json') as songs_file:
