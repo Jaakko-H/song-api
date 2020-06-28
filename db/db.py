@@ -12,8 +12,13 @@ class MongoDB(object):
         self.__clear_songs_collection()
         self.__import_songs_data_from_json()
 
-    def get_songs(self, query, fields_to_return):
-        return list(self.__db[self.collection_songs].find(query, fields_to_return))
+    def get_songs(self, query, fields_to_return=None, page_number=None, page_size=None):
+        result = self.__db[self.collection_songs].find(query, fields_to_return)
+        if page_size:
+            if not page_number:
+                page_number = 0
+            result = result.skip(((page_number - 1) * page_size) if page_number > 0 else 0).limit(page_size)
+        return list(result)
 
     def get_song_ratings(self, query, fields_to_return):
         return list(self.__db[self.collection_song_ratings].find(query, fields_to_return))

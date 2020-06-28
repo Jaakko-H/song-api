@@ -40,21 +40,22 @@ def abort_if_rating_not_in_range(rating):
         abort(400, message='Rating {} not in range of 1-5.'.format(rating))
 
 def abort_if_song_doesnt_exist(song_id):
-    if not mongodb.get_songs({'_id': ObjectId(song_id)}, None):
+    if not mongodb.get_songs({'_id': ObjectId(song_id)}):
         abort(404, message="Song with id {} doesn't exist".format(song_id))
 
 class SongList(Resource):
     req_parser = reqparse.RequestParser()
-    req_parser.add_argument('page_size')
+    req_parser.add_argument('page_number', type=int, help='Requires page_size parameter')
+    req_parser.add_argument('page_size', type=int)
 
     @marshal_with(song_fields)
     def get(self):
         args = self.req_parser.parse_args()
-        return mongodb.get_songs({}, None)
+        return mongodb.get_songs({}, page_number=args['page_number'], page_size=args['page_size'])
 
 class SongAvgDifficulty(Resource):
     req_parser = reqparse.RequestParser()
-    req_parser.add_argument('level')
+    req_parser.add_argument('level', type=int)
 
     def get(self):
         args = self.req_parser.parse_args()
@@ -76,8 +77,7 @@ class SongSearch(Resource):
         args = self.req_parser.parse_args()
         searchRegex = re.compile('.*' + args['message'] + '.*', re.IGNORECASE)
         return mongodb.get_songs(
-                {'$or': [ {'artist': searchRegex}, {'title': searchRegex} ] },
-                None)
+                {'$or': [ {'artist': searchRegex}, {'title': searchRegex} ] })
 
 class SongRating(Resource):
     req_parser = reqparse.RequestParser()
@@ -93,7 +93,7 @@ class SongRating(Resource):
 class SongAvgRating(Resource):
     def get(self, song_id):
         abort_if_song_doesnt_exist(song_id)
-        song_ratings = mongodb.get_song_ratings({'song_id': song_id}, None)
+        song_ratings = mongodb.get_song_ratings({'song_id': song_id})
         if not song_ratings:
             return {
                 'song_id': song_id,
