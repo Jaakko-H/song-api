@@ -91,6 +91,7 @@ class SongRating(Resource):
 
     def post(self):
         args = self.req_parser.parse_args()
+        abort_if_song_doesnt_exist(args['song_id'])
         abort_if_rating_not_in_range(args['rating'])
         return mongodb.insert_song_rating(
                 {'song_id': args['song_id'], 'rating': args['rating']})

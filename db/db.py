@@ -21,7 +21,7 @@ class MongoDB(object):
             result = result.skip(((page_number - 1) * page_size) if page_number > 0 else 0).limit(page_size)
         return list(result)
 
-    def get_song_ratings(self, query, fields_to_return):
+    def get_song_ratings(self, query, fields_to_return=None):
         return list(self.__db[self.collection_song_ratings].find(query, fields_to_return))
 
     def insert_song_rating(self, song_rating):
