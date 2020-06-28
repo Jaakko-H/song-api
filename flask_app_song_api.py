@@ -5,6 +5,7 @@ from bson.objectid import ObjectId
 from db import db
 from flask import Flask
 from flask_restful import Api, Resource, abort, fields, marshal_with, reqparse
+from operator import attrgetter
 from statistics import mean
 
 app = Flask(__name__)
@@ -32,12 +33,6 @@ song_fields = {
     'difficulty': fields.Float,
     'level': fields.Integer,
     'released': fields.String
-}
-
-song_rating_fields = {
-    '_id': fields.String,
-    'song_id': fields.String,
-    'rating': fields.Integer
 }
 
 def abort_if_rating_not_in_range(rating):
@@ -96,11 +91,26 @@ class SongRating(Resource):
                 {'song_id': args['song_id'], 'rating': args['rating']})
 
 class SongAvgRating(Resource):
-    @marshal_with(song_rating_fields)
     def get(self, song_id):
         abort_if_song_doesnt_exist(song_id)
         song_ratings = mongodb.get_song_ratings({'song_id': song_id}, None)
-        return song_ratings
+        if not song_ratings:
+            return {
+                'song_id': song_id,
+                'average': 0,
+                'lowest': 0,
+                'highest': 0
+            }
+        return self.__get_average_lowest_highest_rating(song_id, song_ratings)
+
+    def __get_average_lowest_highest_rating(self, song_id, song_ratings):
+        ratings = [song_rating['rating'] for song_rating in song_ratings]
+        return {
+            'song_id': song_id,
+            'average': mean(ratings),
+            'lowest': min(ratings),
+            'highest': max(ratings)
+        }
 
 api.add_resource(SongList, '/songs')
 api.add_resource(SongAvgDifficulty, '/songs/avg/difficulty')
