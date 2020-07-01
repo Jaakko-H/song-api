@@ -18,21 +18,20 @@ OR on Windows:
 `py -3 -m venv venv`
 `venv\Scripts\activate`
 
-In order to run the project, requirements need to be installed. This can be
-done by typing:
+In order to run the project, it needs to be installed. This can be done by typing:
 
-`pip install -r requirements.txt`
+`pip install -e .`
 
 ## Running the application
 
 It is recommended to run the application by the flask command. In order to
 do that, you need to export the FLASK_APP environment variable:
 
-`export FLASK_APP=flask_app_song_api.py`
+`export FLASK_APP=flaskr/flask_app_song_api.py`
 
 OR on Windows:
 
-`set FLASK_APP=flask_app_song_api.py`
+`set FLASK_APP=flaskr/flask_app_song_api.py`
 
 (Optional) If you wish to run the application in development mode, for example to use hot reload,
 export the FLASK_ENV environment variable as:
@@ -46,3 +45,13 @@ OR on Windows:
 Now you may run the application using:
 
 `flask run`
+
+## Running the tests
+
+To run the API integration tests, simply use:
+
+`pytest`
+
+Note: The tests currently use the same data import file as when running
+the application, thus if you modify the data import file, the tests might
+no longer work.
