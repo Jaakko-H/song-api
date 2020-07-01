@@ -13,13 +13,11 @@ It is highly recommended to run everything in an up-to-date virtualenv.
 The project requires python3 to run properly. The environment can be set up
 using either:
 
-`python3 -m venv venv`
-`. venv/bin/activate`
+`python3 -m venv venv` and `. venv/bin/activate`
 
 OR on Windows:
 
-`py -3 -m venv venv`
-`venv\Scripts\activate`
+`py -3 -m venv venv` and `venv\Scripts\activate`
 
 In order to run the project, it needs to be installed. This can be done by typing:
 
