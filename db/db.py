@@ -11,8 +11,8 @@ class MongoDB(object):
     def __init__(self, db_config):
         mongo_client = pymongo.MongoClient(db_config['mongodb_url'])
         self.__db = mongo_client[db_config['db_name']]
-        self.__clear_song_ratings_collection()
-        self.__clear_songs_collection()
+        self.clear_song_ratings_collection()
+        self.clear_songs_collection()
         self.__import_songs_data_from_json()
 
     def get_songs(self, query, fields_to_return=None, page_number=None, page_size=None):
@@ -29,10 +29,10 @@ class MongoDB(object):
     def insert_song_rating(self, song_rating):
         return str(self.__db[self.collection_song_ratings].insert_one(song_rating).inserted_id)
 
-    def __clear_songs_collection(self):
+    def clear_songs_collection(self):
         self.__db[self.collection_songs].delete_many({})
 
-    def __clear_song_ratings_collection(self):
+    def clear_song_ratings_collection(self):
         self.__db[self.collection_song_ratings].delete_many({})
 
     def __import_songs_data_from_json(self):
